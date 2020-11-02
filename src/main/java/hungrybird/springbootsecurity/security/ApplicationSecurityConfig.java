@@ -30,9 +30,9 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
   @Override
   protected void configure(HttpSecurity http) throws Exception {
     http                                                    // withHttpOnlyFalse: disable cookie from client side. ex. someone tries to get cookie with js, it would be impossible.
-      .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
-      .and()
-//      .csrf().disable()
+//      .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+//      .and()
+      .csrf().disable()
       .authorizeRequests()
       .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
       .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name()) // allows only student to access api/v1/students
