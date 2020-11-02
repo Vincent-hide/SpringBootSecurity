@@ -3,6 +3,7 @@ package hungrybird.springbootsecurity.security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -30,6 +31,10 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
       .authorizeRequests()
       .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
       .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name()) // allows only student to access api/v1/students
+      .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.name())
+      .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.name())
+      .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.name())
+      .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.ADMINTRAINEE.name())
       .anyRequest()
       .authenticated()
       .and()
@@ -43,21 +48,24 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     UserDetails vince = User.builder()
       .username("vince")
       .password(passwordEncoder.encode("password"))
-      .roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
+      //.roles(ApplicationUserRole.STUDENT.name()) // ROLE_STUDENT
+      .authorities((ApplicationUserRole.STUDENT.getGrantedAuthority()))
       .build();
 
     // Role: Admin
     UserDetails hide = User.builder()
       .username("hide")
       .password(passwordEncoder.encode("password"))
-      .roles(ApplicationUserRole.ADMIN.name())
+      //.roles(ApplicationUserRole.ADMIN.name())
+      .authorities(ApplicationUserRole.ADMIN.getGrantedAuthority())
       .build();
 
     // Role: Admin Trainee
     UserDetails suho = User.builder()
       .username("suho")
       .password(passwordEncoder.encode("password"))
-      .roles(ApplicationUserRole.ADMINTRAINEE.name())
+      //.roles(ApplicationUserRole.ADMINTRAINEE.name())
+      .authorities(ApplicationUserRole.ADMINTRAINEE.getGrantedAuthority())
       .build();
 
     return new InMemoryUserDetailsManager(vince, hide, suho);
