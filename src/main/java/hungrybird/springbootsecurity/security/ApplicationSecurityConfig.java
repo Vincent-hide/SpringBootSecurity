@@ -15,6 +15,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 
+import java.util.concurrent.TimeUnit;
+
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
@@ -32,22 +34,33 @@ public class ApplicationSecurityConfig extends WebSecurityConfigurerAdapter {
     http                                                    // withHttpOnlyFalse: disable cookie from client side. ex. someone tries to get cookie with js, it would be impossible.
 //      .csrf().csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
 //      .and()
-      .csrf().disable()
-      .authorizeRequests()
-      .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
-      .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name()) // allows only student to access api/v1/students
-//      .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
-//      .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
-//      .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
-//      .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.ADMINTRAINEE.name())
-      .anyRequest()
-      .authenticated()
+        .csrf().disable()
+        .authorizeRequests()
+        .antMatchers("/", "index", "/css/*", "/js/*").permitAll()
+        .antMatchers("/api/**").hasRole(ApplicationUserRole.STUDENT.name()) // allows only student to access api/v1/students
+  //      .antMatchers(HttpMethod.DELETE, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+  //      .antMatchers(HttpMethod.POST, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+  //      .antMatchers(HttpMethod.PUT, "/management/api/**").hasAuthority(ApplicationUserPermission.COURSE_WRITE.getPermission())
+  //      .antMatchers(HttpMethod.GET, "/management/api/**").hasAnyRole(ApplicationUserRole.ADMIN.name(), ApplicationUserRole.ADMINTRAINEE.name())
+        .anyRequest()
+        .authenticated()
       .and()
-      .formLogin()
-      .loginPage("/login").permitAll()
-      .defaultSuccessUrl("/courses", true)
+        .formLogin()
+        .loginPage("/login").permitAll()
+        .defaultSuccessUrl("/courses", true)
       .and()
-      .rememberMe();
+        .rememberMe()
+  //      .tokenRepository() // it can be used when you store the session ID in database
+        .tokenValiditySeconds((int)TimeUnit.DAYS.toSeconds(21))
+        .key("somethingverysecured")
+      .and()
+        .logout()
+        .logoutUrl("/logout")
+        .clearAuthentication(true)
+        .invalidateHttpSession(true)
+        .deleteCookies("JSESSIONID", "remember-me")
+        .logoutSuccessUrl("/login");
+
   }
 
   @Override
